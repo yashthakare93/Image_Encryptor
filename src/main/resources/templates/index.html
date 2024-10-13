@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Encryption</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" id="imageUpload" name="imageData" accept="image/*" required>
+    <button type="submit">Encrypt</button>
+</form>
+
+<div id="resultContainer" style="display: none;">
+    <h3>Encrypted Data:</h3>
+    <textarea id="encryptedData" rows="5" cols="50" readonly></textarea>
+    <h3>Secret Key:</h3>
+    <textarea id="secretKey" rows="2" cols="50" readonly></textarea>
+</div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const fileInput = document.getElementById('imageUpload');
+        const formData = new FormData();
+        formData.append('imageData', fileInput.files[0]);
+
+        try {
+            const response = await fetch('http://localhost:8080/api/encrypt', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const result = await response.json();
+
+            // Display the encrypted data and secret key in the UI
+            document.getElementById('encryptedData').value = result.encryptedData;
+            document.getElementById('secretKey').value = result.secretKey;
+            document.getElementById('resultContainer').style.display = 'block'; // Show the result container
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+</script>
+</body>
+</html>

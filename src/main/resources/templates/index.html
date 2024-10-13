@@ -3,20 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Encryption</title>
+    <title>Image Encryption and Decryption</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+<!-- Form to upload image and encrypt -->
 <form id="uploadForm" enctype="multipart/form-data">
     <input type="file" id="imageUpload" name="imageData" accept="image/*" required>
     <button type="submit">Encrypt</button>
 </form>
 
-<div id="resultContainer" style="display: none;">
+<!-- Display Encrypted Data and Secret Key -->
+<div id="encryptionResult" style="margin-top: 20px;">
     <h3>Encrypted Data:</h3>
-    <textarea id="encryptedData" rows="5" cols="50" readonly></textarea>
+    <textarea id="encryptedData" rows="4" cols="50"></textarea>
+
     <h3>Secret Key:</h3>
-    <textarea id="secretKey" rows="2" cols="50" readonly></textarea>
+    <textarea id="secretKey" rows="2" cols="50"></textarea>
+</div>
+
+<!-- Form to decrypt the image -->
+<form id="decryptForm" style="margin-top: 20px;">
+    <textarea id="decryptDataInput" placeholder="Enter encrypted data" rows="4" cols="50" required></textarea>
+    <textarea id="secretKeyInput" placeholder="Enter secret key" rows="2" cols="50" required></textarea>
+    <button type="submit">Decrypt</button>
+</form>
+
+<!-- Display Decrypted Image -->
+<div id="decryptedImageContainer" style="margin-top: 20px;">
+    <h3>Decrypted Image:</h3>
+    <img id="decryptedImage" alt="Decrypted Image will appear here" style="max-width: 400px; max-height: 400px;">
 </div>
 
 <script>
@@ -27,24 +43,40 @@
         const formData = new FormData();
         formData.append('imageData', fileInput.files[0]);
 
-        try {
-            const response = await fetch('http://localhost:8080/api/encrypt', {
-                method: 'POST',
-                body: formData
-            });
+        const response = await fetch('http://localhost:8080/api/encrypt', {
+            method: 'POST',
+            body: formData
+        });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+        const result = await response.json();
 
-            const result = await response.json();
-
-            // Display the encrypted data and secret key in the UI
+        if (response.ok) {
             document.getElementById('encryptedData').value = result.encryptedData;
             document.getElementById('secretKey').value = result.secretKey;
-            document.getElementById('resultContainer').style.display = 'block'; // Show the result container
-        } catch (error) {
-            console.error('Error:', error);
+        } else {
+            alert(result.error || "An unknown error occurred.");
+        }
+    });
+
+    document.getElementById('decryptForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const encryptedData = document.getElementById('decryptDataInput').value;
+        const secretKey = document.getElementById('secretKeyInput').value;
+
+        const response = await fetch('http://localhost:8080/api/decrypt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ encryptedData, secretKey })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            const decryptedImageElement = document.getElementById('decryptedImage');
+            decryptedImageElement.src = 'data:image/png;base64,' + result.decryptedData;
+        } else {
+            alert(result.error || "An unknown error occurred.");
         }
     });
 </script>

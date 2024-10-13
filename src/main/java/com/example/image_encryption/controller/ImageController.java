@@ -1,4 +1,5 @@
 package com.example.image_encryption.controller;
+
 import java.util.Base64;
 
 import com.example.image_encryption.model.ImageModel;
@@ -18,40 +19,43 @@ public class ImageController {
         this.imageService = imageService;
     }
 
-
+    // Endpoint to encrypt the image
     @PostMapping("/encrypt")
     public ResponseEntity<?> encryptImage(@RequestParam("imageData") MultipartFile file) {
         if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty. Please upload a valid image.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"File is empty. Please upload a valid image.\"}");
         }
 
         try {
-            byte[] imageBytes = file.getBytes();  // Handle the image as binary data
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes); // Convert byte[] to base64 encoded String
-            String encryptedData = imageService.encryptImage(base64Image); // Pass Base64 string to encryptImage
-            String secretKey = imageService.getSecretKey();
+            byte[] imageBytes = file.getBytes();  // Convert image file to bytes
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes); // Convert to Base64
+            String encryptedData = imageService.encryptImage(base64Image); // Encrypt the image
+            String secretKey = imageService.getSecretKey(); // Get the secret key
 
+            // Create response model with encrypted data and secret key
             ImageModel response = new ImageModel(encryptedData, secretKey);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace(); // Log the error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error encrypting image: " + e.getMessage());
+            e.printStackTrace(); // Log the error for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Error encrypting image: " + e.getMessage() + "\"}");
         }
     }
 
-    @GetMapping("/result")
-    public ResponseEntity<?> getResult(@RequestParam("encryptedData") String encryptedData) {
-        if (encryptedData == null || encryptedData.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Encrypted data is missing or invalid.");
+    // Endpoint to decrypt the image
+    @PostMapping("/decrypt")
+    public ResponseEntity<?> decryptImage(@RequestBody ImageModel imageModel) {
+        if (imageModel.getEncryptedData() == null || imageModel.getEncryptedData().isEmpty() ||
+                imageModel.getSecretKey() == null || imageModel.getSecretKey().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Encrypted data or secret key is missing.\"}");
         }
 
         try {
-            // Decrypt the data (assuming you have a decryptImage method)
-            String decryptedData = imageService.decryptImage(encryptedData);
-            return ResponseEntity.ok(decryptedData);
+            // Decrypt the image using the encrypted data and secret key
+            String decryptedData = imageService.decryptImage(imageModel.getEncryptedData(), imageModel.getSecretKey());
+            return ResponseEntity.ok("{\"decryptedData\": \"" + decryptedData + "\"}"); // Return as JSON
         } catch (Exception e) {
-            e.printStackTrace(); // Log the error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing the result: " + e.getMessage());
+            e.printStackTrace(); // Log the error for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Error decrypting image: " + e.getMessage() + "\"}");
         }
     }
 }

@@ -5,7 +5,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Service;
-
 import java.util.Base64;
 
 @Service
@@ -18,16 +17,18 @@ public class ImageService {
         try {
             this.secretKey = generateKey();
         } catch (Exception e) {
-            e.printStackTrace(); // Consider using a logger instead
+            e.printStackTrace(); // Consider using a logger instead of printing stack traces
         }
     }
 
+    // Generate AES Secret Key
     private SecretKey generateKey() throws Exception {
         KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-        keyGen.init(128); // Key size
+        keyGen.init(128); // Set key size to 128 bits
         return keyGen.generateKey();
     }
 
+    // Encrypt the image data using AES and return the encrypted data
     public String encryptImage(String imageData) {
         try {
             if (secretKey == null) {
@@ -36,33 +37,36 @@ public class ImageService {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] encryptedData = cipher.doFinal(imageData.getBytes());
-            return Base64.getEncoder().encodeToString(encryptedData);
+            return Base64.getEncoder().encodeToString(encryptedData); // Return Base64-encoded encrypted data
         } catch (Exception e) {
-            e.printStackTrace(); // Use logging instead
+            e.printStackTrace(); // Log error instead of printStackTrace
             return "Encryption error: " + e.getMessage();
         }
     }
 
-    public String decryptImage(String encryptedData) {
+    // Decrypt the image data using the provided secret key
+    public String decryptImage(String encryptedData, String base64SecretKey) {
         try {
-            if (secretKey == null) {
-                throw new IllegalStateException("Secret key not initialized.");
-            }
+            byte[] decodedKey = Base64.getDecoder().decode(base64SecretKey);
+            SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, ALGORITHM);
+
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            cipher.init(Cipher.DECRYPT_MODE, originalKey);
+
             byte[] decodedData = Base64.getDecoder().decode(encryptedData);
             byte[] decryptedData = cipher.doFinal(decodedData);
-            return new String(decryptedData);
+            return new String(decryptedData); // Return decrypted data as string
         } catch (Exception e) {
-            e.printStackTrace(); // Use logging instead
+            e.printStackTrace(); // Log error instead of printStackTrace
             return "Decryption error: " + e.getMessage();
         }
     }
 
+    // Get the secret key as a Base64 encoded string
     public String getSecretKey() {
         if (secretKey != null) {
             return Base64.getEncoder().encodeToString(secretKey.getEncoded());
         }
-        return null;
+        return null; // Return null if the secret key is not initialized
     }
 }

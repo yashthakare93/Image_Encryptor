@@ -4,35 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Encryption and Decryption</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-<!-- Form to upload image and encrypt -->
-<form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" id="imageUpload" name="imageData" accept="image/*" required>
-    <button type="submit">Encrypt</button>
-</form>
+<body class="bg-gray-100 font-sans">
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+    <div class="flex justify-center mb-4">
+        <!-- Social Icons -->
+        <a href="https://github.com/yashthakare93" target="_blank" class="text-gray-600 hover:text-blue-600 mx-2 text-2xl">
+            <i class="fab fa-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/yash-thakare01/" target="_blank" class="text-gray-600 hover:text-blue-600 mx-2 text-2xl">
+            <i class="fab fa-linkedin"></i>
+        </a>
+        <!-- Add more social icons as needed -->
+    </div>
 
-<!-- Display Encrypted Data and Secret Key -->
-<div id="encryptionResult" style="margin-top: 20px;">
-    <h3>Encrypted Data:</h3>
-    <textarea id="encryptedData" rows="4" cols="50"></textarea>
+    <h1 class="text-2xl font-bold mb-6 text-center">Image Encryption and Decryption</h1>
 
-    <h3>Secret Key:</h3>
-    <textarea id="secretKey" rows="2" cols="50"></textarea>
-</div>
+    <div class="mb-6">
+        <!-- Form to upload image and encrypt -->
+        <form id="uploadForm" enctype="multipart/form-data" class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Encrypt Image</h3>
+            <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-2">Upload Image:</label>
+            <input type="file" id="imageUpload" name="imageData" accept="image/*" required class="border border-gray-300 rounded-md p-2 w-full mb-4">
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200">Encrypt</button>
+        </form>
 
-<!-- Form to decrypt the image -->
-<form id="decryptForm" style="margin-top: 20px;">
-    <textarea id="decryptDataInput" placeholder="Enter encrypted data" rows="4" cols="50" required></textarea>
-    <textarea id="secretKeyInput" placeholder="Enter secret key" rows="2" cols="50" required></textarea>
-    <button type="submit">Decrypt</button>
-</form>
+        <!-- Display Encrypted Data and Secret Key -->
+        <div id="encryptionResult" class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Encrypted Data:</h3>
+            <textarea id="encryptedData" rows="4" class="border border-gray-300 rounded-md p-2 w-full mb-4" readonly></textarea>
 
-<!-- Display Decrypted Image -->
-<div id="decryptedImageContainer" style="margin-top: 20px;">
-    <h3>Decrypted Image:</h3>
-    <img id="decryptedImage" alt="Decrypted Image will appear here" style="max-width: 400px; max-height: 400px;">
+            <h3 class="text-lg font-semibold mb-2">Secret Key:</h3>
+            <textarea id="secretKey" rows="2" class="border border-gray-300 rounded-md p-2 w-full mb-4" readonly></textarea>
+        </div>
+
+        <!-- Form to decrypt the image -->
+        <form id="decryptForm" class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Decrypt Image</h3>
+            <textarea id="decryptDataInput" placeholder="Enter encrypted data" rows="4" class="border border-gray-300 rounded-md p-2 w-full mb-4" required></textarea>
+            <textarea id="secretKeyInput" placeholder="Enter secret key" rows="2" class="border border-gray-300 rounded-md p-2 w-full mb-4" required></textarea>
+            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition duration-200">Decrypt</button>
+        </form>
+
+        <!-- Display Decrypted Image -->
+        <div id="decryptedImageContainer" class="mb-6 hidden">
+            <h3 class="text-lg font-semibold mb-2">Decrypted Image:</h3>
+            <img id="decryptedImage" alt="Decrypted Image will appear here" class="max-w-full max-h-96 rounded-md shadow-md">
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -72,10 +94,14 @@
 
         const result = await response.json();
 
+        const decryptedImageContainer = document.getElementById('decryptedImageContainer');
+        const decryptedImageElement = document.getElementById('decryptedImage');
+
         if (response.ok) {
-            const decryptedImageElement = document.getElementById('decryptedImage');
             decryptedImageElement.src = 'data:image/png;base64,' + result.decryptedData;
+            decryptedImageContainer.classList.remove('hidden'); // Show the container if image is decrypted
         } else {
+            decryptedImageContainer.classList.add('hidden'); // Hide the container if there is an error
             alert(result.error || "An unknown error occurred.");
         }
     });

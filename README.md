@@ -28,6 +28,16 @@ This project allows users to encrypt and decrypt images using a secure algorithm
 git clone https://github.com/yashthakare93/Image_Encryptor.git
 ```
 
+### inside application.properties
+```
+spring.application.name=image-encryption
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+server.port=8080
+server.tomcat.max-http-header-size=16384
+server.tomcat.max-http-post-size=2097152  
+```
+
 ### Run the Backend
 Navigate to the backend directory of the cloned repository and Run the application using Maven :
 ```
